@@ -1,7 +1,7 @@
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    width: 288,
+    height: 512,
     physics: {
         default: 'arcade',
         arcade: {
@@ -24,17 +24,24 @@ let score = 0;
 let scoreText;
 let gameOver = false;
 let background;
+let flapSound;
+let hitSound;
+let pointSound;
 
 function preload() {
     this.load.image('bird', 'assets/bird.png');
     this.load.image('pipe', 'assets/pipe.png');
     this.load.image('background', 'assets/background.png');
+    this.load.audio('flapSound', 'assets/wing.ogg');
+    this.load.audio('hit', 'assets/hit.ogg');
+    this.load.audio('point', 'assets/point.ogg');
 }
 
 function create() {
-    background = this.add.tileSprite(400, 300, 800, 600, 'background');
+    // Adjusted background to match the game's dimensions
+    background = this.add.tileSprite(config.width / 2, config.height / 2, config.width, config.height, 'background');
 
-    bird = this.physics.add.sprite(100, 300, 'bird');
+    bird = this.physics.add.sprite(100, config.height / 2, 'bird');
     bird.setCollideWorldBounds(true);
 
     pipes = this.physics.add.group();
@@ -42,6 +49,10 @@ function create() {
     scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
 
     this.input.keyboard.on('keydown-SPACE', flap, this);
+
+    flapSound = this.sound.add('flapSound');
+    hitSound = this.sound.add('hit');
+    pointSound = this.sound.add('point');
 
     this.time.addEvent({
         delay: 1500,
@@ -56,6 +67,7 @@ function create() {
 function flap() {
     if (!gameOver) {
         bird.setVelocityY(-350);
+        flapSound.play();
     }
 }
 
@@ -68,19 +80,30 @@ function addPipe(x, y) {
 
 function addRowOfPipes() {
     const pipeGap = 150;
-    const pipeHolePosition = Phaser.Math.Between(100, 450);
+    const pipeHolePosition = Phaser.Math.Between(pipeGap, config.height - pipeGap);
 
-    // Create the top pipe
-    addPipe(800, pipeHolePosition - 320);
+    addPipe(config.width, pipeHolePosition - 340);
+    addPipe(config.width, pipeHolePosition + pipeGap);
 
-    // Create the bottom pipe
-    addPipe(800, pipeHolePosition + pipeGap);
+    let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null).setOrigin(0, 0);
+    triggerZone.displayHeight = pipeGap;
+    triggerZone.displayWidth = 1;
+    triggerZone.setVisible(true);
+    triggerZone.body.allowGravity = false;
+    triggerZone.setVelocityX(-200);
 
-    score++;
-    scoreText.setText('Score: ' + score);
+    this.physics.add.overlap(bird, triggerZone, function(){
+        score++;
+        scoreText.setText('Score: ' + score);
+
+        pointSound.play();
+        triggerZone.destroy();
+    }, null, this);
 }
 
+
 function hitPipe() {
+    hitSound.play();
     this.physics.pause();
     bird.setTint(0xff0000);
     bird.anims.stop();
