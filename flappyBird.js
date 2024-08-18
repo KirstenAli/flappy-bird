@@ -74,15 +74,15 @@ function flap() {
 
 function addPipe(x, y) {
     let pipe = pipes.create(x, y, 'pipe');
-    pipe.setVelocityX(-200);
     pipe.setOrigin(0, 0);
     pipe.body.allowGravity = false;
+    pipe.setVelocityX(-200);
 }
 
 function addRowOfPipes() {
-    const pipeHolePosition = Phaser.Math.Between(pipeGap, config.height - pipeGap);
+    const pipeHolePosition = Phaser.Math.Between(config.height/4, 300);
 
-    addPipe(config.width, pipeHolePosition - 340);
+    addPipe(config.width, pipeHolePosition - 320);
     addPipe(config.width, pipeHolePosition + pipeGap);
 
     let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null);
@@ -94,7 +94,7 @@ function initTriggerZone(triggerZone){
     triggerZone.setOrigin(0, 0);
     triggerZone.displayHeight = pipeGap;
     triggerZone.displayWidth = 1;
-    triggerZone.setVisible(true);
+    triggerZone.setVisible(false);
     triggerZone.body.allowGravity = false;
     triggerZone.setVelocityX(-200);
 }
@@ -106,7 +106,6 @@ function scorePoint(bird, triggerZone){
     triggerZone.destroy();
     pointSound.play();
 }
-
 
 function hitPipe() {
     hitSound.play();
