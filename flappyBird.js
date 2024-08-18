@@ -86,6 +86,7 @@ function addRowOfPipes() {
     addPipe(config.width, pipeHolePosition + pipeGap);
 
     let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null);
+    initTriggerZone(triggerZone);
     this.physics.add.overlap(bird, triggerZone, scorePoint, null, this);
 }
 
