@@ -39,7 +39,6 @@ function preload() {
 }
 
 function create() {
-    // Adjusted background to match the game's dimensions
     background = this.add.tileSprite(config.width / 2, config.height / 2, config.width, config.height, 'background');
 
     bird = this.physics.add.sprite(100, config.height / 2, 'bird');
@@ -72,17 +71,23 @@ function flap() {
     }
 }
 
-function addPipe(x, y) {
+function addPipe(x, y, flipY) {
     let pipe = pipes.create(x, y, 'pipe');
     pipe.setOrigin(0, 0);
+
+    if(flipY){
+        pipe.setFlipY(true);
+    }
+
     pipe.body.allowGravity = false;
+    pipe.body.immovable = true;
     pipe.setVelocityX(-200);
 }
 
 function addRowOfPipes() {
     const pipeHolePosition = Phaser.Math.Between(config.height/4, 300);
 
-    addPipe(config.width, pipeHolePosition - 320);
+    addPipe(config.width, pipeHolePosition - 320, true);
     addPipe(config.width, pipeHolePosition + pipeGap);
 
     let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null);
@@ -91,9 +96,9 @@ function addRowOfPipes() {
 }
 
 function initTriggerZone(triggerZone){
-    triggerZone.setOrigin(0, 0);
     triggerZone.displayHeight = pipeGap;
     triggerZone.displayWidth = 1;
+    triggerZone.setOrigin(0, 0);
     triggerZone.setVisible(false);
     triggerZone.body.allowGravity = false;
     triggerZone.setVelocityX(-200);
