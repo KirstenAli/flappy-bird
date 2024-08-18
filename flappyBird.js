@@ -27,6 +27,7 @@ let background;
 let flapSound;
 let hitSound;
 let pointSound;
+const pipeGap = 150;
 
 function preload() {
     this.load.image('bird', 'assets/bird.png');
@@ -79,26 +80,30 @@ function addPipe(x, y) {
 }
 
 function addRowOfPipes() {
-    const pipeGap = 150;
     const pipeHolePosition = Phaser.Math.Between(pipeGap, config.height - pipeGap);
 
     addPipe(config.width, pipeHolePosition - 340);
     addPipe(config.width, pipeHolePosition + pipeGap);
 
-    let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null).setOrigin(0, 0);
+    let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null);
+    this.physics.add.overlap(bird, triggerZone, scorePoint, null, this);
+}
+
+function initTriggerZone(triggerZone){
+    triggerZone.setOrigin(0, 0);
     triggerZone.displayHeight = pipeGap;
     triggerZone.displayWidth = 1;
     triggerZone.setVisible(true);
     triggerZone.body.allowGravity = false;
     triggerZone.setVelocityX(-200);
+}
 
-    this.physics.add.overlap(bird, triggerZone, function(){
-        score++;
-        scoreText.setText('Score: ' + score);
+function scorePoint(bird, triggerZone){
+    score++;
+    scoreText.setText('Score: ' + score);
 
-        pointSound.play();
-        triggerZone.destroy();
-    }, null, this);
+    triggerZone.destroy();
+    pointSound.play();
 }
 
 
