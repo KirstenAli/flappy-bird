@@ -2,6 +2,10 @@ const config = {
     type: Phaser.AUTO,
     width: 288,
     height: 512,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     physics: {
         default: 'arcade',
         arcade: {
@@ -43,6 +47,7 @@ function create() {
 
     bird = this.physics.add.sprite(100, config.height / 2, 'bird');
     bird.setCollideWorldBounds(true);
+    bird.body.onWorldBounds = true;
 
     pipes = this.physics.add.group();
 
@@ -62,6 +67,12 @@ function create() {
     });
 
     this.physics.add.collider(bird, pipes, hitPipe, null, this);
+
+    this.physics.world.on('worldbounds', function(body) {
+        if (body.gameObject === bird) {
+            hitPipe.call(this);
+        }
+    }, this);
 }
 
 function flap() {
@@ -75,7 +86,7 @@ function addPipe(x, y, flipY) {
     let pipe = pipes.create(x, y, 'pipe');
     pipe.setOrigin(0, 0);
 
-    if(flipY){
+    if (flipY) {
         pipe.setFlipY(true);
     }
 
@@ -85,26 +96,24 @@ function addPipe(x, y, flipY) {
 }
 
 function addRowOfPipes() {
-    const pipeHolePosition = Phaser.Math.Between(config.height/4, 300);
+    const pipeHolePosition = Phaser.Math.Between(config.height / 4, 300);
 
     addPipe(config.width, pipeHolePosition - 320, true);
     addPipe(config.width, pipeHolePosition + pipeGap);
 
-    let triggerZone = this.physics.add.sprite(config.width, pipeHolePosition, null);
+    let triggerZone = this.add.zone(config.width, pipeHolePosition, 1, pipeGap);
+    this.physics.add.existing(triggerZone);
     initTriggerZone(triggerZone);
     this.physics.add.overlap(bird, triggerZone, scorePoint, null, this);
 }
 
-function initTriggerZone(triggerZone){
-    triggerZone.displayHeight = pipeGap;
-    triggerZone.displayWidth = 1;
-    triggerZone.setOrigin(0, 0);
-    triggerZone.setVisible(false);
+function initTriggerZone(triggerZone) {
     triggerZone.body.allowGravity = false;
-    triggerZone.setVelocityX(-200);
+    triggerZone.body.immovable = true;
+    triggerZone.body.setVelocityX(-200);
 }
 
-function scorePoint(bird, triggerZone){
+function scorePoint(bird, triggerZone) {
     score++;
     scoreText.setText('Score: ' + score);
 
@@ -113,11 +122,12 @@ function scorePoint(bird, triggerZone){
 }
 
 function hitPipe() {
-    hitSound.play();
-    this.physics.pause();
-    bird.setTint(0xff0000);
-    bird.anims.stop();
-    gameOver = true;
+    if (!gameOver) {
+        hitSound.play();
+        this.physics.pause();
+        bird.setTint(0xff0000);
+        gameOver = true;
+    }
 }
 
 function update() {
