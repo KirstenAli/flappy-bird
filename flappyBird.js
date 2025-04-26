@@ -48,7 +48,7 @@ function create() {
 
     scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });
 
-    this.input.keyboard.on('keydown-SPACE', flap, this);
+    this.input.on('pointerdown', flap, this);
 
     flapSound = this.sound.add('flapSound');
     hitSound = this.sound.add('hit');
